@@ -1,7 +1,7 @@
-require 5.003_96; # Time-stamp: "2001-02-23 03:19:22 MST"
+require 5.003_96; # Time-stamp: "2001-02-25 00:33:05 MST"
  # same minimal version required as constant.pm
 package Getopt::constant;
-$VERSION = '1.01';
+$VERSION = '1.02';
 use strict;
 
 sub import {
@@ -131,7 +131,7 @@ Getopt::constant -- set constants from command line options
 Other command-line options processing modules (like Getopt::Std)
 parse command-line arguments (from @ARGV) and set either variables or
 hash entries based on them.  This module, however, parses command-line
-arguments into constants.
+arguments into constants which are put into the current package.
 
 You provide default values for each constant in the list that you pass
 in the "use Getopt::constant (...);" statement.  Values can be a scalar
@@ -144,8 +144,9 @@ which case you will get a list constant).
 
 =item ":prefix" => STRING,
 
-Constants are put in the calling package, and named by putting the value
-of ":prefix" (which can be empty-string) before the option name.  For
+Constants are named by putting the value
+of the ":prefix" option
+(which can be empty-string) before the option name.  For
 an example, read the SYNOPSIS section above.
 
 Default is empty-string, C<"">.  A common useful value you
@@ -178,7 +179,7 @@ an option that's not in its list of known options, this is considered
 a fatal error, unless the ":permissive" option has been set to true
 (in which case it is simply ignored).
 
-When happens in the case of a fatal error is controlled by the
+What happens in the case of a fatal error is controlled by the
 ":usage" parameter's value:
 
 If it's a string, then on STDERR we print "Unknown options: ", and the
@@ -192,7 +193,7 @@ If it's undef (which is the default value), then on STDERR we print
 newline, and then on the next line, the list of all permitted options;
 and then the program exits.
 
-If it's a code ref, the code ref is called with three options: a
+If it's a code ref, then the code ref is called with three options: a
 reference to the array of unknown options found, a reference to the
 array of options allowed, and a reference to the hash consisting of
 the elements passed in the 'C<use Getopt::constant (...)>;' statement.
@@ -235,11 +236,11 @@ and then with something like Getopt::Std, you should consider:
 argument list of C<qw(-foo 13 -bar)> which you want to be parsed by
 Getopt::constant and then by Getopt::Long.  Getopt::Long will parse it
 as you expect, but Getopt::constant has a more restricted view of
-switch parsing, it will stop parsing at "13".)
+switch parsing and will stop parsing at "13".)
 
 =item ":I<whatever>" => any_value,
 
-Assignments to parameters beginning with ":" other than the ones mentioned
+Assignments to parameters beginning with ":", other than the ones mentioned
 above, have no effect.
 
 =item "option_name" => [ ...list elements... ]
@@ -275,7 +276,7 @@ This sets option "foo" to 1 if it's to be a scalar constant
 =item -foo=VALUE or --foo=VALUE
 
 This sets option "foo" to VALUE if it's to be a scalar constant
-(as it usually is), or if it's to be a list constant, then
+(as it usually is); or if it's to be a list constant, then
 it's set to:
 
       split(",", VALUE, -1)
@@ -321,19 +322,23 @@ Consider this:
       scalar(localtime), time - $^T;
 
 What's the point of doing this, as opposed to using Getopt::Std to set
-a C<$DEBUG> everywhere where we have a C<DEBUG> above?  Every time an
-expression consisting of a variable, or involving a variable (like
-"C<$DEBUG> > 1") encountered, it has to be evaluated.  That means that
-in every iteration of the loop, (like "C<$DEBUG> > 1") would have to
-be evaluated.  However, with constants, or expressions involving
+a C<$DEBUG> that we'd use everywhere where we have a C<DEBUG> above?
+Well, every time an expression consisting of a variable, or involving
+a variable (like "C<$DEBUG E<gt> 1>") is encountered, it has to be
+evaluated.  That means that in every iteration of the loop, the
+expression "C<$DEBUG E<gt> 1>" would have to be evaluated anew, since
+Perl has no assurance that C<$DEBUG>'s value can't have changed since
+the last iteration.  But, with constants, or expressions involving
 constants, Perl evaluates them only once, at compile time.  So if Perl
-knows DEBUG is 2, then the expression
+knows that the constant DEBUG has the value 2, then the expression
 
       print " About to do things with $thing\n" if DEBUG > 1;
 
 turns into:
 
       print " About to do things with $thing\n";
+
+as Perl compiles it.
 
 But more importantly, if Perl knows DEBUG is 0 (or anything such that
 "DEBUG > 1" is false) then the above statement is actually removed
