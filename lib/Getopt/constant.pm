@@ -1,7 +1,9 @@
-require 5.003_96; # Time-stamp: "2001-02-25 00:33:05 MST"
+
+require 5.003_96; # Time-stamp: "2004-12-29 19:27:33 AST"
  # same minimal version required as constant.pm
+
 package Getopt::constant;
-$VERSION = '1.02';
+$VERSION = '1.03';
 use strict;
 
 sub import {
